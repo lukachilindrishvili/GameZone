@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}რეგისტრაცია{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-sm-9 col-md-6 col-lg-4">
+      <div class="mb-3">
+        <a href="https://tbcbank.ge/ka" target="_blank" class="gz-tbc-card-logo">
+          <img src="{{ url_for('static', filename='images/tbc_logo.png') }}" alt="TBC Bank" height="36"
+               onerror="this.onerror=null;this.src='';this.closest('a').innerHTML='<span class=gz-tbc-text-sm>TBC Bank</span>'"/>
+        </a>
+      </div>
+      <div class="gz-auth-card p-4">
+        <div class="text-center mb-4">
+          <i class="bi bi-person-plus gz-neon-text" style="font-size:2.5rem"></i>
+          <h3 class="gz-brand-text mt-2">შექმენი ანგარიში</h3>
+          <p class="text-secondary small">გახდი GameZone-ის გეიმერი</p>
+        </div>
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            {{ form.username.label(class='form-label text-secondary small') }}
+            {{ form.username(class='form-control gz-input', placeholder='gamer_name') }}
+            {% for e in form.username.errors %}<div class="gz-err">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            {{ form.email.label(class='form-label text-secondary small') }}
+            {{ form.email(class='form-control gz-input', placeholder='mail@example.com') }}
+            {% for e in form.email.errors %}<div class="gz-err">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-3">
+            {{ form.password.label(class='form-label text-secondary small') }}
+            {{ form.password(class='form-control gz-input', placeholder='min. 6 simbolo') }}
+            {% for e in form.password.errors %}<div class="gz-err">{{ e }}</div>{% endfor %}
+          </div>
+          <div class="mb-4">
+            {{ form.confirm_password.label(class='form-label text-secondary small') }}
+            {{ form.confirm_password(class='form-control gz-input', placeholder='gaimeoreT') }}
+            {% for e in form.confirm_password.errors %}<div class="gz-err">{{ e }}</div>{% endfor %}
+          </div>
+          {{ form.submit(class='btn gz-btn-neon w-100 py-2') }}
+        </form>
+        <p class="text-secondary small text-center mt-3 mb-0">
+          <i class="bi bi-envelope gz-neon-text me-1"></i>registraciis shemdeg el-fostaze mova shetnobineba
+        </p>
+        <hr class="gz-divider mt-3"/>
+        <p class="text-center text-secondary small mb-0">
+          ukve gaqvt angarishi? <a href="{{ url_for('main.login') }}" class="gz-link fw-semibold">shessvla</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}403{% endblock %}
+{% block content %}
+<div class="container text-center py-5">
+  <i class="bi bi-shield-x gz-neon-text" style="font-size:5rem"></i>
+  <h1 class="mt-3">403 — წვდომა აკრძალულია</h1>
+  <p class="text-secondary">ეს გვერდი მხოლოდ ადმინისტრატორებისთვისაა.</p>
+  <a href="{{ url_for('main.index') }}" class="btn gz-btn-neon mt-3">მთავარი</a>
+</div>
+{% endblock %}

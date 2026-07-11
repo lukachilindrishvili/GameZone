@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}მთავარი — GameZone{% endblock %}
+{% block content %}
+<section class="gz-hero">
+  <div class="container text-center position-relative">
+    <h1 class="gz-hero-title"><i class="bi bi-controller"></i> GameZone</h1>
+    <p class="gz-hero-sub">PC · PlayStation · Xbox · Nintendo · Accessories</p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
+      <a href="{{ url_for('main.store') }}" class="btn gz-btn-neon btn-lg px-5">
+        <i class="bi bi-grid-3x3-gap me-2"></i>მაღაზიაში შესვლა
+      </a>
+      {% if not current_user.is_authenticated %}
+      <a href="{{ url_for('main.register') }}" class="btn btn-outline-light btn-lg px-4">
+        <i class="bi bi-person-plus me-2"></i>რეგისტრაცია
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="gz-stats py-3">
+  <div class="container">
+    <div class="row g-2 text-center">
+      {% for icon, val, lbl in [('bi-box-seam', total~'+', 'პროდუქტი'),('bi-truck','სწრაფი','მიწოდება'),('bi-shield-check','ორიგინ.','პროდუქცია'),('bi-headset','24/7','მხარდაჭ.')] %}
+      <div class="col-6 col-md-3">
+        <div class="gz-stat-pill">
+          <i class="bi {{ icon }} gz-neon-text fs-4 d-block"></i>
+          <div class="fw-bold">{{ val }}</div>
+          <small class="text-secondary">{{ lbl }}</small>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% set cm = {'console':('bi-joystick','კონსოლები','text-warning'),'pc_game':('bi-pc-display','PC თამაში','text-info'),'console_game':('bi-disc','კონს. თამ.','text-success'),'controller':('bi-controller','კონტ.','text-primary'),'headset':('bi-headset','ჰედსეტი','text-danger'),'keyboard':('bi-keyboard','კლავ.','gz-neon-text'),'mouse':('bi-mouse2','მაუსი','text-warning'),'monitor':('bi-display','მონიტ.','text-info'),'gpu':('bi-cpu','GPU','text-success'),'chair':('bi-person-workspace','სავარ.','text-primary'),'accessory':('bi-tools','სხვა','text-secondary')} %}
+{% if categories %}
+<section class="container my-5">
+  <h2 class="gz-sec-title mb-4"><i class="bi bi-grid gz-neon-text"></i> კატეგორიები</h2>
+  <div class="row g-3">
+    {% for cat in categories %}
+    {% set m = cm.get(cat, ('bi-tag', cat, 'text-light')) %}
+    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+      <a href="{{ url_for('main.store', category=cat) }}" class="gz-cat-card text-decoration-none d-block text-center p-3">
+        <i class="bi {{ m[0] }} {{ m[2] }} fs-2 d-block mb-2"></i>
+        <span class="small fw-semibold text-light">{{ m[1] }}</span>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="container my-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="gz-sec-title mb-0"><i class="bi bi-fire gz-neon-text"></i> ახალი პროდუქტები</h2>
+    <a href="{{ url_for('main.store') }}" class="btn btn-outline-secondary btn-sm">ყველა <i class="bi bi-arrow-right"></i></a>
+  </div>
+  {% if featured %}
+  <div class="row g-4">
+    {% for p in featured %}
+    <div class="col-12 col-sm-6 col-md-4 col-lg-3">{% include '_product_card.html' %}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+
+<section class="gz-platforms py-5 my-4">
+  <div class="container text-center">
+    <h2 class="gz-sec-title mb-4"><i class="bi bi-joystick gz-neon-text"></i> პლატფორმები</h2>
+    <div class="d-flex justify-content-center gap-4 flex-wrap">
+      {% for icon, plat, col in [('bi-playstation','PS5','text-primary'),('bi-xbox','Xbox','text-success'),('bi-nintendo-switch','Switch','text-danger'),('bi-pc-display-horizontal','PC','text-info')] %}
+      <a href="{{ url_for('main.store', platform=plat) }}" class="gz-plat-link text-decoration-none {{ col }} fs-4 fw-semibold">
+        <i class="bi {{ icon }}"></i> {{ plat }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.gz-like-btn[data-pid]').forEach(btn => {
+  btn.addEventListener('click', async e => {
+    e.preventDefault();
+    const res = await fetch(`/product/${btn.dataset.pid}/like`, {method:'POST',headers:{'X-CSRFToken':'{{ csrf_token() }}'}});
+    if(res.ok){const d=await res.json();btn.querySelector('i').className=d.liked?'bi bi-heart-fill':'bi bi-heart';btn.classList.toggle('liked',d.liked);btn.querySelector('.gz-like-count').textContent=d.count;}
+  });
+});
+</script>
+{% endblock %}

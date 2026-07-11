@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}შენახული{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <h2 class="gz-sec-title mb-4"><i class="bi bi-heart-fill text-danger"></i> შენახული პროდუქტები</h2>
+  {% if products %}
+  <div class="row g-4">
+    {% for p in products %}<div class="col-12 col-sm-6 col-md-4 col-lg-3">{% include '_product_card.html' %}</div>{% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-heart text-secondary" style="font-size:4rem"></i>
+    <h5 class="mt-3 text-secondary">შენახული პროდუქტი არ გაქვთ</h5>
+    <a href="{{ url_for('main.store') }}" class="btn gz-btn-neon mt-2"><i class="bi bi-grid-3x3-gap me-2"></i>მაღაზია</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('.gz-like-btn[data-pid]').forEach(btn=>{btn.addEventListener('click',async()=>{const r=await fetch(`/product/${btn.dataset.pid}/like`,{method:'POST',headers:{'X-CSRFToken':'{{ csrf_token() }}'}});if(r.ok){const d=await r.json();if(!d.liked){document.getElementById('card-'+btn.dataset.pid)?.closest('.col-12')?.remove();}}});});
+</script>
+{% endblock %}

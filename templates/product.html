@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}{{ p.name }}{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb gz-bc">
+      <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">მთავარი</a></li>
+      <li class="breadcrumb-item"><a href="{{ url_for('main.store') }}">მაღაზია</a></li>
+      <li class="breadcrumb-item active">{{ p.name }}</li>
+    </ol>
+  </nav>
+  <div class="row g-5">
+    <div class="col-12 col-md-5">
+      <div class="gz-detail-img-wrap">
+        {% if p.image_url %}<img src="{{ p.image_url }}" alt="{{ p.name }}" class="gz-detail-img"/>
+        {% else %}<div class="gz-detail-img-ph"><i class="bi bi-controller" style="font-size:5rem;color:#444"></i></div>{% endif %}
+      </div>
+    </div>
+    <div class="col-12 col-md-7">
+      {% set cl={'console':'კონსოლი','pc_game':'PC თამ.','console_game':'კონს. თამ.','controller':'კონტ.','headset':'ჰედს.','keyboard':'კლავ.','mouse':'მაუსი','monitor':'მონიტ.','gpu':'GPU','chair':'სავარ.','accessory':'სხვა'} %}
+      <div class="mb-2">
+        <span class="badge bg-primary me-1">{{ cl.get(p.category, p.category) }}</span>
+        {% if p.platform %}<span class="badge bg-secondary">{{ p.platform }}</span>{% endif %}
+      </div>
+      <h1 class="fw-bold">{{ p.name }}</h1>
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <span class="gz-detail-price">₾{{ '%.2f'|format(p.price) }}</span>
+        <button class="gz-like-btn {% if liked %}liked{% endif %} gz-like-lg" id="like-btn" data-pid="{{ p.id }}"
+                {% if not current_user.is_authenticated %}onclick="window.location='{{ url_for('main.login') }}'"{% endif %}>
+          <i class="bi bi-heart{% if liked %}-fill{% endif %}"></i>
+          <span id="like-count">{{ p.like_count }}</span> შენახვა
+        </button>
+      </div>
+      {% if p.stock == 0 %}<div class="alert alert-danger py-2"><i class="bi bi-x-circle"></i> მარაგი ამოიწურა</div>
+      {% elif p.stock < 5 %}<div class="alert alert-warning py-2"><i class="bi bi-exclamation-triangle"></i> მხოლოდ <b>{{ p.stock }}</b> დარჩა!</div>
+      {% else %}<div class="alert alert-success py-2"><i class="bi bi-check-circle"></i> მარაგშია — {{ p.stock }} ერთ.</div>{% endif %}
+      <p class="text-secondary mt-3">{{ p.description }}</p>
+      {% if p.stock > 0 %}
+      {% if current_user.is_authenticated %}
+      <form method="POST" action="{{ url_for('main.cart_add', pid=p.id) }}" class="d-flex gap-3 align-items-end mt-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div>
+          <label class="form-label text-secondary small">რაოდენობა</label>
+          <div class="input-group gz-qty-group" style="width:130px">
+            <button type="button" class="btn btn-outline-secondary gz-qty-btn" onclick="let i=this.nextElementSibling;i.value=Math.max(1,+i.value-1)"><i class="bi bi-dash"></i></button>
+            <input type="number" name="quantity" value="1" min="1" max="{{ p.stock }}" class="form-control gz-qty-input text-center"/>
+            <button type="button" class="btn btn-outline-secondary gz-qty-btn" onclick="let i=this.previousElementSibling;i.value=Math.min({{ p.stock }},+i.value+1)"><i class="bi bi-plus"></i></button>
+          </div>
+        </div>
+        <button type="submit" class="btn gz-btn-neon btn-lg px-4"><i class="bi bi-cart-plus me-2"></i>კალათში</button>
+      </form>
+      {% else %}
+      <a href="{{ url_for('main.login') }}" class="btn gz-btn-neon btn-lg mt-4 px-4"><i class="bi bi-cart-plus me-2"></i>კალათში</a>
+      {% endif %}
+      {% endif %}
+      <ul class="list-unstyled text-secondary small mt-4">
+        <li class="mb-1"><i class="bi bi-truck gz-neon-text me-2"></i> სწრაფი მიწოდება</li>
+        <li class="mb-1"><i class="bi bi-shield-check gz-neon-text me-2"></i> ორიგინალი პროდუქცია</li>
+        <li><i class="bi bi-arrow-return-left gz-neon-text me-2"></i> დაბრუნების გარანტია</li>
+      </ul>
+    </div>
+  </div>
+  {% if related %}
+  <div class="mt-5">
+    <h4 class="gz-sec-title mb-4"><i class="bi bi-collection gz-neon-text"></i> მსგავსი</h4>
+    <div class="row g-4">
+      {% for p in related %}<div class="col-6 col-md-3">{% include '_product_card.html' %}</div>{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const lb=document.getElementById('like-btn');
+if(lb){lb.addEventListener('click',async()=>{const r=await fetch(`/product/${lb.dataset.pid}/like`,{method:'POST',headers:{'X-CSRFToken':'{{ csrf_token() }}'}});if(r.ok){const d=await r.json();lb.querySelector('i').className=d.liked?'bi bi-heart-fill':'bi bi-heart';lb.classList.toggle('liked',d.liked);document.getElementById('like-count').textContent=d.count;}});}
+document.querySelectorAll('.gz-like-btn[data-pid]:not(#like-btn)').forEach(btn=>{btn.addEventListener('click',async e=>{e.preventDefault();const r=await fetch(`/product/${btn.dataset.pid}/like`,{method:'POST',headers:{'X-CSRFToken':'{{ csrf_token() }}'}});if(r.ok){const d=await r.json();btn.querySelector('i').className=d.liked?'bi bi-heart-fill':'bi bi-heart';btn.classList.toggle('liked',d.liked);btn.querySelector('.gz-like-count').textContent=d.count;}});});
+</script>
+{% endblock %}

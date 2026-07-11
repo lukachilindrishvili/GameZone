@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ka" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>{% block title %}GameZone{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+<!-- ══ NAVBAR ═══════════════════════════════════════════════════════════════ -->
+<nav class="navbar navbar-expand-lg navbar-dark gz-navbar sticky-top">
+  <div class="container">
+    <a class="navbar-brand gz-brand" href="{{ url_for('main.index') }}">
+      <i class="bi bi-controller"></i> GameZone
+    </a>
+    <button class="navbar-toggler border-0" type="button"
+            data-bs-toggle="collapse" data-bs-target="#nb">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="nb">
+      <ul class="navbar-nav me-auto gap-1">
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint=='main.index' %}active{% endif %}"
+             href="{{ url_for('main.index') }}">
+            <i class="bi bi-house-door"></i> მთავარი
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint=='main.store' %}active{% endif %}"
+             href="{{ url_for('main.store') }}">
+            <i class="bi bi-grid-3x3-gap"></i> მაღაზია
+          </a>
+        </li>
+        {% if current_user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link {% if request.endpoint=='main.liked' %}active{% endif %}"
+             href="{{ url_for('main.liked') }}">
+            <i class="bi bi-heart"></i> შენახული
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+
+      <!-- Search -->
+      <form class="d-flex me-3 my-1 my-lg-0" action="{{ url_for('main.store') }}" method="GET">
+        <div class="input-group gz-search-bar">
+          <input type="text" name="search" class="form-control gz-search-input"
+                 placeholder="ძებნა…" value="{{ request.args.get('search','') }}"/>
+          <button class="btn gz-search-btn" type="submit">
+            <i class="bi bi-search"></i>
+          </button>
+        </div>
+      </form>
+
+      <ul class="navbar-nav align-items-center gap-1">
+        {% if current_user.is_authenticated %}
+
+          <!-- Cart icon with badge -->
+          <li class="nav-item">
+            <a class="nav-link position-relative {% if request.endpoint=='main.cart' %}active{% endif %}"
+               href="{{ url_for('main.cart') }}">
+              <i class="bi bi-cart3 fs-5"></i>
+              {% if cart_count > 0 %}
+                <span class="gz-cart-badge">{{ cart_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+
+          {% if current_user.is_admin %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle gz-admin-link" href="#" data-bs-toggle="dropdown">
+              <i class="bi bi-shield-shaded"></i> ადმინი
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end gz-drop">
+              <li><a class="dropdown-item" href="{{ url_for('main.admin_dashboard') }}">
+                <i class="bi bi-speedometer2 text-warning"></i> დაშბორდი</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('main.admin_products') }}">
+                <i class="bi bi-box-seam text-info"></i> პროდუქტები</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('main.admin_add') }}">
+                <i class="bi bi-plus-circle text-success"></i> დამატება</a></li>
+            </ul>
+          </li>
+          {% endif %}
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+              <i class="bi bi-person-circle"></i> {{ current_user.username }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end gz-drop">
+              <li><a class="dropdown-item" href="{{ url_for('main.profile') }}">
+                <i class="bi bi-person text-info"></i> პროფილი</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('main.cart') }}">
+                <i class="bi bi-cart3 text-warning"></i> კალათი
+                {% if cart_count > 0 %}
+                  <span class="badge bg-danger ms-1">{{ cart_count }}</span>
+                {% endif %}
+              </a></li>
+              <li><a class="dropdown-item" href="{{ url_for('main.liked') }}">
+                <i class="bi bi-heart text-danger"></i> შენახული</a></li>
+              <li><hr class="dropdown-divider"/></li>
+              <li><a class="dropdown-item" href="{{ url_for('main.profile') }}#settings">
+                <i class="bi bi-gear text-secondary"></i> პარამეტრები</a></li>
+              <li><hr class="dropdown-divider"/></li>
+              <li><a class="dropdown-item text-danger" href="{{ url_for('main.logout') }}">
+                <i class="bi bi-box-arrow-right"></i> გამოსვლა</a></li>
+            </ul>
+          </li>
+
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('main.login') }}">
+              <i class="bi bi-box-arrow-in-right"></i> შესვლა
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="btn gz-btn-neon btn-sm ms-1" href="{{ url_for('main.register') }}">
+              <i class="bi bi-person-plus"></i> რეგისტრაცია
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ FLASH ═════════════════════════════════════════════════════════════════ -->
+<div class="container mt-3">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show gz-alert" role="alert">
+          {{ msg }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+
+<main>{% block content %}{% endblock %}</main>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════════════════════ -->
+<footer class="gz-footer mt-5 py-4">
+  <div class="container text-center">
+    <p class="mb-1 fw-semibold">
+      <i class="bi bi-controller gz-neon-text"></i>
+      <span class="gz-brand-text">GameZone</span> — TBC TechSchool × GeoLab 2026
+    </p>
+    <small class="text-secondary">Flask · SQLAlchemy · Bootstrap 5 · Python Back-End</small>
+  </div>
+</footer>
+
+<!-- ══ TBC BANK — fixed bottom-right ════════════════════════════════════════ -->
+<a href="https://www.tbceducation.ge/" target="_blank" rel="noopener" class="gz-tbc-widget" title="TBC Bank">
+  <img src="{{ url_for('static', filename='images/tbc_logo.png') }}" alt="TBC Bank"
+       onerror="this.onerror=null;this.src='';this.closest('a').innerHTML='<span class=gz-tbc-text>TBC</span>'"/>
+</a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% block title %}პროფილი — {{ current_user.username }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+
+  <!-- ══ HEADER ══════════════════════════════════════════════════════════════ -->
+  <div class="gz-profile-header mb-4">
+    <div class="d-flex align-items-center gap-4 flex-wrap">
+      <div class="gz-avatar">{{ current_user.username[0].upper() }}</div>
+      <div>
+        <h2 class="mb-1 fw-bold">{{ current_user.username }}</h2>
+        <p class="text-secondary mb-1"><i class="bi bi-envelope me-1"></i>{{ current_user.email }}</p>
+        <p class="text-secondary small mb-0">
+          <i class="bi bi-calendar3 me-1"></i>
+          დარეგისტრირდა: {{ current_user.created_at.strftime('%d.%m.%Y') }}
+          {% if current_user.is_admin %}
+            &nbsp;<span class="badge gz-badge-admin"><i class="bi bi-shield-shaded"></i> ადმინი</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mt-3">
+      {% for icon, val, lbl, col in [
+        ('bi-bag-check',   orders|length,     'შეკვეთა',    'text-info'),
+        ('bi-heart-fill',  liked|length,      'შენახული',   'text-danger'),
+        ('bi-cart3',       cart_items|length, 'კალათში',    'text-warning'),
+      ] %}
+      <div class="col-4">
+        <div class="gz-profile-stat">
+          <i class="bi {{ icon }} {{ col }} fs-4 d-block mb-1"></i>
+          <div class="fw-bold fs-5">{{ val }}</div>
+          <small class="text-secondary">{{ lbl }}</small>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ══ TABS ════════════════════════════════════════════════════════════════ -->
+  <ul class="nav gz-tabs mb-4" id="profileTabs">
+    <li class="nav-item">
+      <a class="gz-tab active" href="#orders"   data-bs-toggle="tab">
+        <i class="bi bi-bag-check"></i> შეკვეთები
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="gz-tab" href="#liked-tab" data-bs-toggle="tab">
+        <i class="bi bi-heart"></i> შენახული
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="gz-tab" href="#settings" data-bs-toggle="tab" id="settings-tab-link">
+        <i class="bi bi-gear"></i> პარამეტრები
+      </a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+
+    <!-- ── Orders tab ──────────────────────────────────────────────────────── -->
+    <div class="tab-pane fade show active" id="orders">
+      {% if orders %}
+      <div class="d-flex flex-column gap-3">
+        {% for order in orders %}
+        {% set smap = {
+          'pending':  ('warning','⏳','მოლოდინი'),
+          'confirmed':('info',   '✅','დადასტ.'),
+          'shipped':  ('primary','🚚','გაიგზავნა'),
+          'delivered':('success','📦','მიტანილი'),
+          'cancelled':('danger', '❌','გაუქმდა'),
+        } %}
+        {% set s = smap.get(order.status, ('secondary','?','უცნობი')) %}
+        <div class="gz-order-card">
+          <div class="gz-order-hdr d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <span class="fw-bold">შეკვეთა #{{ order.id }}</span>
+              <span class="text-secondary small ms-3">
+                <i class="bi bi-calendar3"></i>
+                {{ order.created_at.strftime('%d.%m.%Y %H:%M') }}
+              </span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-{{ s[0] }}">{{ s[1] }} {{ s[2] }}</span>
+              <span class="gz-neon-text fw-bold">₾{{ '%.2f'|format(order.total) }}</span>
+            </div>
+          </div>
+          <div class="p-3">
+            {% for item in order.items %}
+            <div class="d-flex justify-content-between py-1 border-bottom gz-border-dim">
+              <span>{{ item.product.name if item.product else 'წაშლილი პროდ.' }}</span>
+              <span class="text-secondary">× {{ item.quantity }} &nbsp; ₾{{ '%.2f'|format(item.price_at_purchase) }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-5 text-secondary">
+        <i class="bi bi-bag fs-1"></i>
+        <p class="mt-2">შეკვეთა ჯერ არ გაქვთ.</p>
+        <a href="{{ url_for('main.store') }}" class="btn gz-btn-neon">მაღაზიაში შესვლა</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ── Liked tab ────────────────────────────────────────────────────────── -->
+    <div class="tab-pane fade" id="liked-tab">
+      {% if liked %}
+      <div class="row g-3">
+        {% for p in liked %}
+        <div class="col-6 col-md-3">
+          <a href="{{ url_for('main.product', pid=p.id) }}" class="text-decoration-none">
+            <div class="gz-card h-100">
+              <div class="gz-card-img-wrap">
+                {% if p.image_url %}
+                  <img src="{{ p.image_url }}" alt="{{ p.name }}" class="gz-card-img" loading="lazy"/>
+                {% else %}
+                  <div class="gz-card-img-ph"><i class="bi bi-controller fs-2 text-secondary"></i></div>
+                {% endif %}
+              </div>
+              <div class="p-2">
+                <h6 class="gz-card-name small mb-1">{{ p.name }}</h6>
+                <div class="gz-price small">₾{{ '%.2f'|format(p.price) }}</div>
+              </div>
+            </div>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-5 text-secondary">
+        <i class="bi bi-heart fs-1"></i>
+        <p class="mt-2">შენახული პროდუქტი არ გაქვთ.</p>
+        <a href="{{ url_for('main.store') }}" class="btn gz-btn-neon">მაღაზია</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- ── Settings tab ─────────────────────────────────────────────────────── -->
+    <div class="tab-pane fade" id="settings">
+      <div class="row g-4">
+
+        <!-- Change Password -->
+        <div class="col-12 col-md-6">
+          <div class="gz-settings-card">
+            <div class="gz-settings-hdr">
+              <i class="bi bi-lock text-warning me-2"></i>
+              <strong>პაროლის შეცვლა</strong>
+            </div>
+            <div class="p-4">
+              <form method="POST" action="{{ url_for('main.change_password') }}" novalidate>
+                {{ pw_form.hidden_tag() }}
+
+                <div class="mb-3">
+                  {{ pw_form.current_password.label(class='form-label text-secondary small') }}
+                  {{ pw_form.current_password(class='form-control gz-input', placeholder='••••••') }}
+                </div>
+                <div class="mb-3">
+                  {{ pw_form.new_password.label(class='form-label text-secondary small') }}
+                  {{ pw_form.new_password(class='form-control gz-input', placeholder='მინ. 6 სიმბ.') }}
+                </div>
+                <div class="mb-4">
+                  {{ pw_form.confirm_password.label(class='form-label text-secondary small') }}
+                  {{ pw_form.confirm_password(class='form-control gz-input', placeholder='••••••') }}
+                </div>
+                <button type="submit" class="btn gz-btn-neon w-100">
+                  <i class="bi bi-lock me-1"></i> პაროლის შეცვლა
+                </button>
+              </form>
+              <p class="text-secondary small mt-3 mb-0">
+                <i class="bi bi-envelope-check gz-neon-text me-1"></i>
+                შეცვლის შემდეგ შეტყობინება გაიგზავნება ელ-ფოსტაზე.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Change Email -->
+        <div class="col-12 col-md-6">
+          <div class="gz-settings-card">
+            <div class="gz-settings-hdr">
+              <i class="bi bi-envelope text-info me-2"></i>
+              <strong>ელ-ფოსტის შეცვლა</strong>
+            </div>
+            <div class="p-4">
+              <div class="gz-current-email mb-3">
+                <small class="text-secondary">მიმდინარე ელ-ფოსტა</small>
+                <div class="fw-semibold">{{ current_user.email }}</div>
+              </div>
+              <form method="POST" action="{{ url_for('main.change_email') }}" novalidate>
+                {{ email_form.hidden_tag() }}
+
+                <div class="mb-3">
+                  {{ email_form.new_email.label(class='form-label text-secondary small') }}
+                  {{ email_form.new_email(class='form-control gz-input', placeholder='new@example.com') }}
+                </div>
+                <div class="mb-4">
+                  {{ email_form.current_password.label(class='form-label text-secondary small') }}
+                  {{ email_form.current_password(class='form-control gz-input', placeholder='••••••') }}
+                </div>
+                <button type="submit" class="btn gz-btn-neon w-100">
+                  <i class="bi bi-envelope me-1"></i> ელ-ფოსტის შეცვლა
+                </button>
+              </form>
+              <p class="text-secondary small mt-3 mb-0">
+                <i class="bi bi-envelope-check gz-neon-text me-1"></i>
+                ძველ მისამართზე გაიგზავნება შეტყობინება.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto-open settings tab if URL has #settings
+if (window.location.hash === '#settings') {
+  document.querySelector('[href="#settings"]').click();
+}
+</script>
+{% endblock %}

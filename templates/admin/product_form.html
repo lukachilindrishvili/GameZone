@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — ადმინი{% endblock %}
+{% block content %}
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-7">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <a href="{{ url_for('main.admin_products') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <h2 class="gz-sec-title mb-0"><i class="bi bi-plus-circle gz-neon-text"></i> {{ title }}</h2>
+      </div>
+      <div class="gz-panel p-4">
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="row g-3">
+            <div class="col-12">{{ form.name.label(class='form-label text-secondary small') }}{{ form.name(class='form-control gz-input') }}{% for e in form.name.errors %}<div class="gz-err">{{ e }}</div>{% endfor %}</div>
+            <div class="col-sm-6">{{ form.category.label(class='form-label text-secondary small') }}{{ form.category(class='form-select gz-input') }}{% for e in form.category.errors %}<div class="gz-err">{{ e }}</div>{% endfor %}</div>
+            <div class="col-sm-6">{{ form.platform.label(class='form-label text-secondary small') }}{{ form.platform(class='form-select gz-input') }}</div>
+            <div class="col-sm-6">{{ form.price.label(class='form-label text-secondary small') }}<div class="input-group"><span class="input-group-text gz-input-addon">₾</span>{{ form.price(class='form-control gz-input', placeholder='0.00') }}</div>{% for e in form.price.errors %}<div class="gz-err">{{ e }}</div>{% endfor %}</div>
+            <div class="col-sm-6">{{ form.stock.label(class='form-label text-secondary small') }}{{ form.stock(class='form-control gz-input', placeholder='0') }}{% for e in form.stock.errors %}<div class="gz-err">{{ e }}</div>{% endfor %}</div>
+            <div class="col-12">{{ form.image_url.label(class='form-label text-secondary small') }}{{ form.image_url(class='form-control gz-input', placeholder='https://...') }}{% if form.image_url.data %}<img src="{{ form.image_url.data }}" class="mt-2 rounded" height="70" onerror="this.style.display='none'"/>{% endif %}</div>
+            <div class="col-12">{{ form.description.label(class='form-label text-secondary small') }}{{ form.description(class='form-control gz-input', rows=4) }}{% for e in form.description.errors %}<div class="gz-err">{{ e }}</div>{% endfor %}</div>
+            <div class="col-12 d-flex gap-2 mt-2">{{ form.submit(class='btn gz-btn-neon px-5') }}<a href="{{ url_for('main.admin_products') }}" class="btn btn-outline-secondary">გაუქმება</a></div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

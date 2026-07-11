@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}ადმინ დაშბორდი{% endblock %}
+{% block content %}
+<div class="container-fluid px-4 my-4">
+  <h2 class="gz-sec-title mb-4"><i class="bi bi-speedometer2 gz-neon-text"></i> ადმინ დაშბორდი</h2>
+  <div class="row g-4 mb-4">
+    {% for icon,val,lbl,col in [('bi-box-seam',stats.products,'პროდუქტი','gz-stat-green'),('bi-people',stats.users,'მომხმარ.','gz-stat-blue'),('bi-receipt',stats.orders,'შეკვეთა','gz-stat-purple'),('bi-x-circle',stats.stock0,'ამოწ.','gz-stat-red')] %}
+    <div class="col-6 col-md-3">
+      <div class="gz-stat-card {{ col }}">
+        <i class="bi {{ icon }} d-block mb-2 fs-2"></i>
+        <div class="gz-stat-num">{{ val }}</div>
+        <div class="gz-stat-lbl">{{ lbl }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% if stats.low %}
+  <div class="gz-panel mb-4">
+    <div class="gz-panel-hdr"><i class="bi bi-exclamation-triangle text-warning me-2"></i><strong>მცირე მარაგი</strong></div>
+    <div class="p-3">
+      {% for p in stats.low %}
+      <div class="d-flex justify-content-between py-2 border-bottom gz-border-dim">
+        <a href="{{ url_for('main.product', pid=p.id) }}" class="gz-link">{{ p.name }}</a>
+        <span class="badge bg-warning text-dark">{{ p.stock }} ერთ.</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% if recent %}
+  <div class="gz-panel mb-4">
+    <div class="gz-panel-hdr"><i class="bi bi-receipt me-2"></i><strong>ბოლო შეკვეთები</strong></div>
+    <div class="table-responsive">
+      <table class="table table-dark table-hover align-middle mb-0">
+        <thead><tr class="text-secondary small"><th>#</th><th>მომხ.</th><th>თარიღი</th><th>სტატ.</th><th class="text-end">ჯამი</th></tr></thead>
+        <tbody>
+          {% set sm={'pending':('warning','მოლოდ.'),'confirmed':('info','დადასტ.'),'shipped':('primary','გაიგზ.'),'delivered':('success','მიტ.'),'cancelled':('danger','გაუქ.')} %}
+          {% for o in recent %}{% set s=sm.get(o.status,('secondary','?')) %}
+          <tr><td>#{{ o.id }}</td><td>{{ o.user.username }}</td><td class="small text-secondary">{{ o.created_at.strftime('%d.%m.%y') }}</td><td><span class="badge bg-{{ s[0] }}">{{ s[1] }}</span></td><td class="text-end gz-neon-text">{{ '%.2f'|format(o.total) }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+  <div class="row g-3">
+    <div class="col-6 col-sm-3"><a href="{{ url_for('main.admin_add') }}" class="btn gz-btn-neon w-100"><i class="bi bi-plus-circle me-1"></i>დამატება</a></div>
+    <div class="col-6 col-sm-3"><a href="{{ url_for('main.admin_products') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-box-seam me-1"></i>პროდუქტები</a></div>
+    <div class="col-6 col-sm-3"><a href="{{ url_for('main.store') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-shop me-1"></i>მაღაზია</a></div>
+    <div class="col-6 col-sm-3"><a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary w-100"><i class="bi bi-house me-1"></i>მთავარი</a></div>
+  </div>
+</div>
+{% endblock %}

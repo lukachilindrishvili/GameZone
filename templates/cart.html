@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}კალათი — GameZone{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h2 class="gz-sec-title mb-4">
+    <i class="bi bi-cart3 gz-neon-text"></i> სასურველი სია
+  </h2>
+
+  {% if items %}
+  <div class="row g-4">
+
+    <!-- Items -->
+    <div class="col-12 col-lg-8">
+      <div class="d-flex flex-column gap-3">
+        {% for item in items %}
+        <div class="gz-cart-item">
+          <!-- Product image -->
+          <div class="gz-cart-img">
+            {% if item.product.image_url %}
+              <img src="{{ item.product.image_url }}" alt="{{ item.product.name }}" loading="lazy"/>
+            {% else %}
+              <i class="bi bi-controller text-secondary fs-2"></i>
+            {% endif %}
+          </div>
+
+          <!-- Info -->
+          <div class="gz-cart-info flex-grow-1">
+            <a href="{{ url_for('main.product', pid=item.product.id) }}"
+               class="gz-link fw-semibold">{{ item.product.name }}</a>
+            {% if item.product.platform %}
+              <span class="badge bg-secondary ms-1 small">{{ item.product.platform }}</span>
+            {% endif %}
+            <div class="gz-price mt-1">₾{{ '%.2f'|format(item.product.price) }}</div>
+            <small class="text-secondary">
+              მარაგი: {{ item.product.stock + item.quantity }} ერთ.
+            </small>
+          </div>
+
+          <!-- Quantity + Remove -->
+          <div class="gz-cart-actions">
+            <form method="POST" action="{{ url_for('main.cart_update', pid=item.product.id) }}"
+                  class="d-flex align-items-center gap-2">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <div class="input-group gz-qty-group">
+                <button type="button" class="btn btn-outline-secondary gz-qty-btn"
+                        onclick="let i=this.nextElementSibling; i.value=Math.max(1,+i.value-1)">
+                  <i class="bi bi-dash"></i>
+                </button>
+                <input type="number" name="quantity" value="{{ item.quantity }}" min="1"
+                       max="{{ item.product.stock + item.quantity }}"
+                       class="form-control gz-qty-input text-center"/>
+                <button type="button" class="btn btn-outline-secondary gz-qty-btn"
+                        onclick="let i=this.previousElementSibling; i.value=+i.value+1">
+                  <i class="bi bi-plus"></i>
+                </button>
+              </div>
+              <button type="submit" class="btn btn-outline-info btn-sm" title="განახლება">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </form>
+
+            <div class="gz-cart-subtotal">
+              ₾{{ '%.2f'|format(item.quantity * item.product.price) }}
+            </div>
+
+            <form method="POST" action="{{ url_for('main.cart_remove', pid=item.product.id) }}"
+                  style="display:inline">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <button type="submit" class="btn btn-sm btn-outline-danger" title="წაშლა">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="col-12 col-lg-4">
+      <div class="gz-cart-summary">
+        <h5 class="mb-3 fw-bold">შეკვეთის მიმოხილვა</h5>
+
+        {% for item in items %}
+        <div class="d-flex justify-content-between mb-2 small text-secondary">
+          <span>{{ item.product.name }} × {{ item.quantity }}</span>
+          <span>₾{{ '%.2f'|format(item.quantity * item.product.price) }}</span>
+        </div>
+        {% endfor %}
+
+        <hr class="gz-divider"/>
+
+        <div class="d-flex justify-content-between fw-bold mb-1">
+          <span>სულ:</span>
+          <span class="gz-neon-text fs-5">₾{{ '%.2f'|format(total) }}</span>
+        </div>
+        <p class="text-secondary small mb-4">
+          <i class="bi bi-truck gz-neon-text me-1"></i> მიწოდება უფასოა
+        </p>
+
+        <form method="POST" action="{{ url_for('main.checkout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          <button type="submit" class="btn gz-btn-neon w-100 py-3 fw-bold">
+            <i class="bi bi-bag-check me-2"></i>შეკვეთის განხორციელება
+          </button>
+        </form>
+
+        <a href="{{ url_for('main.store') }}" class="btn btn-outline-secondary w-100 mt-2">
+          <i class="bi bi-arrow-left me-1"></i>შოპინგის გაგრძელება
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-cart-x text-secondary" style="font-size:4rem"></i>
+    <h5 class="mt-3 text-secondary">კალათი ცარიელია</h5>
+    <p class="text-secondary">დაამატეთ პროდუქტები კალათში</p>
+    <a href="{{ url_for('main.store') }}" class="btn gz-btn-neon mt-2">
+      <i class="bi bi-grid-3x3-gap me-2"></i>მაღაზიაში შესვლა
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
